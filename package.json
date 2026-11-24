@@ -1,0 +1,7 @@
+{
+  "name": "gelir-takip",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Stüdyo ve Düğün Salonu gelir takip uygulaması"
+}

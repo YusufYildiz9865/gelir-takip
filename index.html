@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gelir Takip">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Gelir Takip</title>
+<style>
+  :root {
+    --bg: #F3F4F6; --card: #FFFFFF; --text: #111827; --muted: #6B7280; --border: #E5E7EB;
+    --primary: #111827; --danger: #DC2626; --studio: #2563EB; --salon: #DB2777;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 16px; }
+  button, input, textarea { font: inherit; color: inherit; }
+  .hidden { display: none !important; }
+  .screen { padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 4px 0 16px; }
+  h2 { font-size: 17px; margin: 0 0 12px; }
+  .label { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+  .input { width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; font-size: 16px; margin-bottom: 16px; outline: none; }
+  .input:focus { border-color: #9CA3AF; }
+  textarea.input { min-height: 90px; resize: vertical; }
+  .btn { display: block; width: 100%; border: 0; border-radius: 12px; padding: 14px 16px;
+    font-weight: 700; font-size: 16px; background: var(--primary); color: #fff; cursor: pointer; }
+  .btn:disabled { opacity: .5; }
+  .btn.outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: var(--danger); }
+  .btn + .btn { margin-top: 10px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .row { display: flex; align-items: center; }
+  .between { justify-content: space-between; }
+  .wrap { flex-wrap: wrap; }
+  .muted { color: var(--muted); }
+  .chip { border: 1px solid var(--border); background: #fff; border-radius: 20px; padding: 8px 14px;
+    margin: 0 8px 8px 0; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .chip.active { background: var(--c, var(--primary)); border-color: var(--c, var(--primary)); color: #fff; }
+  .biz { flex: 1; border: 2px solid var(--border); border-radius: 16px; padding: 18px 8px; background: #fff;
+    margin: 0 4px; text-align: center; cursor: pointer; }
+  .biz .ico { font-size: 30px; }
+  .biz .name { font-weight: 700; margin-top: 6px; }
+  .biz.active { color: #fff; }
+  .arrow { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin: 0 4px; cursor: pointer; }
+  .datebox { flex: 1; text-align: center; margin-bottom: 0; }
+  .amount { font-size: 24px; font-weight: 700; }
+  .rec { border-left: 5px solid var(--c); }
+  .rec .amt { font-size: 22px; font-weight: 800; margin-top: 6px; }
+  .link { background: none; border: 0; padding: 0; font-weight: 700; cursor: pointer; margin-right: 24px; }
+  .total-card { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .big { font-size: 28px; font-weight: 800; margin-top: 4px; }
+  .bigger { font-size: 34px; font-weight: 900; margin-top: 4px; }
+  .best { background: #FEF3C7; color: #92400E; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+  .bar { display: flex; height: 14px; background: #F3F4F6; border-radius: 7px; overflow: hidden; }
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: #fff;
+    border-top: 1px solid var(--border); padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); }
+  .tab { flex: 1; background: none; border: 0; padding: 4px 0; text-align: center; cursor: pointer; }
+  .tab .ti { font-size: 22px; opacity: .5; display: block; }
+  .tab .tl { font-size: 12px; color: var(--muted); }
+  .tab.active .ti { opacity: 1; }
+  .tab.active .tl { color: var(--text); font-weight: 700; }
+  .center { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 24px; max-width: 460px; margin: 0 auto; }
+  .toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    background: #111827; color: #fff; padding: 12px 18px; border-radius: 12px; font-weight: 600; z-index: 50;
+    max-width: 90%; text-align: center; }
+  .toast.err { background: var(--danger); }
+  .loading { text-align: center; color: var(--muted); padding: 30px 0; }
+</style>
+</head>
+<body>
+
+<!-- GİRİŞ -->
+<div id="login" class="center hidden">
+  <div style="font-size:44px;text-align:center">💰</div>
+  <h1 style="text-align:center;margin-bottom:4px">Gelir Takip</h1>
+  <p class="muted" style="text-align:center;margin:0 0 32px">Stüdyo &amp; Düğün Salonu</p>
+  <form id="loginForm">
+    <label class="label">Kullanıcı adı</label>
+    <input id="loginUser" class="input" autocapitalize="off" autocorrect="off" autocomplete="username">
+    <label class="label">Şifre</label>
+    <input id="loginPass" class="input" type="password" autocomplete="current-password">
+    <button id="loginBtn" class="btn" type="submit">Giriş Yap</button>
+  </form>
+</div>
+
+<!-- UYGULAMA -->
+<div id="app" class="hidden">
+  <div id="view" class="screen"></div>
+  <nav class="tabbar">
+    <button class="tab" data-tab="ekle"><span class="ti">➕</span><span class="tl">Gelir Ekle</span></button>
+    <button class="tab" data-tab="kayitlar"><span class="ti">📋</span><span class="tl">Kayıtlar</span></button>
+    <button class="tab" data-tab="ozet"><span class="ti">📊</span><span class="tl">Özet</span></button>
+    <button class="tab" data-tab="ayarlar"><span class="ti">⚙️</span><span class="tl">Ayarlar</span></button>
+  </nav>
+</div>
+
+<script>
+'use strict';
+
+// ================= Yardımcılar =================
+const BUSINESS = {
+  studio: { label: 'Stüdyo', icon: '🎬', color: '#2563EB' },
+  salon: { label: 'Düğün Salonu', icon: '💒', color: '#DB2777' },
+};
+const PAYMENT = { nakit: 'Nakit', kart: 'Kart', havale: 'Havale/EFT' };
+const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const PERIODS = [['bugun','Bugün'],['hafta','Bu Hafta'],['ay','Bu Ay'],['yil','Bu Yıl'],['tumu','Tümü'],['ozel','Tarih Seç']];
+
+const $ = (sel) => document.querySelector(sel);
+const pad = (n) => String(n).padStart(2, '0');
+const toDateStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayStr = () => toDateStr(new Date());
+const fromDateStr = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const displayDate = (s) => { if (!s) return ''; const [y, m, d] = s.split('-'); return `${d}.${m}.${y}`; };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+function parseAmount(text) {
+  let t = String(text ?? '').replace(/[\s₺TL]/gi, '');
+  if (!t) return NaN;
+  const hasDot = t.includes('.'), hasComma = t.includes(',');
+  if (hasDot && hasComma) t = t.replace(/\./g, '').replace(',', '.');
+  else if (hasComma) t = t.replace(',', '.');
+  else if (hasDot && /^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+function formatMoney(n) {
+  const num = Number(n) || 0;
+  const [i, d] = Math.abs(num).toFixed(2).split('.');
+  return `${num < 0 ? '-' : ''}${i.replace(/\B(?=(\d{3})+(?!\d))/g, '.')},${d} ₺`;
+}
+const shortMoney = (n) => `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')} ₺`;
+const amountToInput = (n) => Number(n).toFixed(2).replace('.', ',').replace(/,00$/, '');
+
+function getRange(period) {
+  const now = new Date(), today = toDateStr(now);
+  if (period === 'bugun') return [today, today];
+  if (period === 'hafta') {
+    const diff = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    return [toDateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff)), today];
+  }
+  if (period === 'ay') return [toDateStr(new Date(now.getFullYear(), now.getMonth(), 1)), today];
+  if (period === 'yil') return [toDateStr(new Date(now.getFullYear(), 0, 1)), today];
+  return [null, null];
+}
+
+let toastTimer;
+function toast(msg, isErr) {
+  document.querySelectorAll('.toast').forEach((t) => t.remove());
+  const el = document.createElement('div');
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.remove(), isErr ? 4500 : 2200);
+}
+
+// ================= Depolama (yerel) =================
+const LS = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* yok say */ } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { /* yok say */ } },
+};
+const SS = {
+  get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* yok say */ } },
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) { /* yok say */ } },
+};
+
+// ================= Sunucu (API) =================
+let TOKEN = SS.get('gt_token') || '';
+
+async function api(path, { method = 'GET', data } = {}) {
+  let res;
+  try {
+    res = await fetch('/api/' + path, {
+      method,
+      headers: {
+        ...(data ? { 'Content-Type': 'application/json' } : {}),
+        ...(TOKEN ? { Authorization: 'Bearer ' + TOKEN } : {}),
+      },
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  } catch (e) {
+    throw new Error('Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.');
+  }
+  let out = null;
+  try { out = await res.json(); } catch (e) { out = null; }
+  if (res.status === 401 && path !== 'login') {
+    sessionExpired((out && out.error) || 'Oturum süresi doldu.');
+    throw new Error((out && out.error) || 'Oturum süresi doldu.');
+  }
+  if (!res.ok) throw new Error((out && out.error) || `Sunucu hatası (${res.status})`);
+  return out;
+}
+
+function setSession(token, user) {
+  TOKEN = token; state.user = user;
+  SS.set('gt_token', token); SS.set('gt_user', user);
+}
+function clearSession() {
+  TOKEN = ''; state.user = null;
+  SS.del('gt_token'); SS.del('gt_user');
+}
+function sessionExpired(msg) {
+  clearSession(); state.records = []; state.editing = null; state.form = emptyForm();
+  toast(msg, true); show('login');
+}
+
+const db = {
+  login: (username, password) => api('login', { method: 'POST', data: { username, password } }),
+  changeCredentials: (currentPassword, newUsername, newPassword) =>
+    api('credentials', { method: 'POST', data: { currentPassword, newUsername, newPassword } }),
+  list: () => api('records'),
+  insert: (r) => api('records', { method: 'POST', data: r }),
+  update: (r) => api('records', { method: 'PUT', data: r }),
+  remove: (id) => api('records?id=' + encodeURIComponent(id), { method: 'DELETE' }),
+};
+
+// ================= Durum =================
+const state = {
+  user: SS.get('gt_token') ? SS.get('gt_user') : null,
+  tab: 'ekle',
+  records: [],
+  loading: false,
+  editing: null,               // düzenlenen kayıt
+  form: null,                  // gelir ekleme formu
+  filter: 'tumu',
+  period: 'ay',
+  customStart: todayStr().slice(0, 8) + '01',
+  customEnd: todayStr(),
+  chartYear: new Date().getFullYear(),
+  chartMode: 'toplam',
+};
+const emptyForm = () => ({ business: null, date: todayStr(), amount: '', payment: 'nakit', note: '' });
+state.form = emptyForm();
+
+// ================= Ekranlar =================
+function show(id) {
+  ['login', 'app'].forEach((s) => $('#' + s).classList.toggle('hidden', s !== id));
+}
+
+function start() {
+  if (!state.user) { show('login'); return; }
+  show('app');
+  goTab(location.hash.slice(1) || 'ekle', true);
+  loadRecords();
+}
+
+async function loadRecords() {
+  state.loading = true; render();
+  try { state.records = await db.list(); }
+  catch (e) { if (state.user) toast('Kayıtlar yüklenemedi: ' + e.message, true); }
+  finally { state.loading = false; render(); }
+}
+
+function goTab(tab, replace) {
+  if (!['ekle', 'kayitlar', 'ozet', 'ayarlar'].includes(tab)) tab = 'ekle';
+  if (tab !== 'ekle' && state.editing) { state.editing = null; state.form = emptyForm(); }
+  state.tab = tab;
+  const url = '#' + tab;
+  if (location.hash !== url) (replace ? history.replaceState : history.pushState).call(history, null, '', url);
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  render();
+  window.scrollTo(0, 0);
+}
+
+function render() {
+  const v = $('#view');
+  if (state.tab === 'ekle') v.innerHTML = renderAdd();
+  else if (state.tab === 'kayitlar') v.innerHTML = renderRecords();
+  else if (state.tab === 'ozet') v.innerHTML = renderSummary();
+  else v.innerHTML = renderSettings();
+}
+
+// ---------- Gelir Ekle ----------
+function renderAdd() {
+  const f = state.form;
+  return `
+    <h1>${state.editing ? 'Kaydı Düzenle' : 'Gelir Ekle'}</h1>
+    <span class="label">İş yeri</span>
+    <div class="row" style="margin:0 -4px 16px">
+      ${Object.entries(BUSINESS).map(([k, b]) => `
+        <div class="biz ${f.business === k ? 'active' : ''}" data-act="biz" data-v="${k}"
+          style="${f.business === k ? `background:${b.color};border-color:${b.color}` : ''}">
+          <div class="ico">${b.icon}</div><div class="name">${b.label}</div>
+        </div>`).join('')}
+    </div>
+    <span class="label">Tarih</span>
+    <div class="row" style="margin-bottom:16px">
+      <button class="arrow" data-act="day" data-v="-1">◀</button>
+      <input class="input datebox" type="date" id="fDate" value="${f.date}">
+      <button class="arrow" data-act="day" data-v="1">▶</button>
+    </div>
+    <label class="label">Gelen para (₺)</label>
+    <input class="input amount" id="fAmount" inputmode="decimal" placeholder="Örn: 2500" value="${esc(f.amount)}">
+    <span class="label">Ödeme türü</span>
+    <div class="row wrap" style="margin-bottom:8px">
+      ${Object.entries(PAYMENT).map(([k, l]) => `<button class="chip ${f.payment === k ? 'active' : ''}" data-act="pay" data-v="${k}">${l}</button>`).join('')}
+    </div>
+    <label class="label">Not (isteğe bağlı)</label>
+    <input class="input" id="fNote" placeholder="Örn: Ahmet Bey düğünü – kapora" value="${esc(f.note)}">
+    <button class="btn" id="saveBtn" data-act="save">${state.editing ? 'Değişiklikleri Kaydet' : 'Kaydet'}</button>
+    ${state.editing ? '<button class="btn outline" data-act="cancelEdit">Vazgeç</button>' : ''}
+  `;
+}
+
+function readForm() {
+  const f = state.form;
+  if ($('#fDate')) { f.date = $('#fDate').value || f.date; f.amount = $('#fAmount').value; f.note = $('#fNote').value; }
+}
+
+async function saveForm() {
+  readForm();
+  const f = state.form;
+  if (!f.business) return toast('Lütfen Stüdyo veya Salon seçin.', true);
+  const amount = parseAmount(f.amount);
+  if (isNaN(amount) || amount <= 0) return toast('Geçerli bir tutar girin. Örn: 1500 veya 1.250,50', true);
+  const editingId = state.editing && state.editing.id;
+  const sameDay = state.records.some((r) => r.business === f.business && r.date === f.date && r.id !== editingId);
+  if (sameDay && !confirm(`${BUSINESS[f.business].label} için ${displayDate(f.date)} tarihine zaten kayıt var. Yine de eklensin mi?`)) return;
+
+  const rec = { id: editingId, business: f.business, date: f.date, amount, payment: f.payment, note: f.note.trim() };
+  const btn = $('#saveBtn'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    if (editingId) {
+      const saved = await db.update(rec);
+      state.records = state.records.map((r) => (r.id === saved.id ? saved : r));
+      state.editing = null; state.form = emptyForm();
+      toast('Değişiklikler kaydedildi ✅');
+      goTab('kayitlar');
+    } else {
+      const saved = await db.insert(rec);
+      state.records = [saved, ...state.records];
+      state.form = emptyForm();
+      toast(`Kaydedildi ✅ ${BUSINESS[saved.business].label} – ${displayDate(saved.date)}`);
+      render();
+    }
+  } catch (e) {
+    toast('Kaydedilemedi: ' + e.message, true);
+    btn.disabled = false; btn.textContent = editingId ? 'Değişiklikleri Kaydet' : 'Kaydet';
+  }
+}
+
+// ---------- Kayıtlar ----------
+function sortedRecords(list) {
+  return [...list].sort((a, b) => (a.date === b.date ? b.createdAt - a.createdAt : a.date < b.date ? 1 : -1));
+}
+function renderRecords() {
+  const list = sortedRecords(state.filter === 'tumu' ? state.records : state.records.filter((r) => r.business === state.filter));
+  return `
+    <div class="row between"><h1>Kayıtlar</h1><button class="chip" data-act="refresh" style="margin:0">🔄 Yenile</button></div>
+    <div class="row wrap" style="margin-bottom:8px">
+      <button class="chip ${state.filter === 'tumu' ? 'active' : ''}" data-act="filter" data-v="tumu">Tümü</button>
+      ${Object.entries(BUSINESS).map(([k, b]) => `<button class="chip ${state.filter === k ? 'active' : ''}" style="--c:${b.color}" data-act="filter" data-v="${k}">${b.label}</button>`).join('')}
+    </div>
+    ${state.loading ? '<div class="loading">Yükleniyor…</div>' : ''}
+    ${!state.loading && !list.length ? '<div class="loading">Henüz kayıt yok.</div>' : ''}
+    ${list.map((r) => {
+      const b = BUSINESS[r.business] || BUSINESS.studio;
+      return `<div class="card rec" style="--c:${b.color}">
+        <div class="row between"><b style="color:${b.color}">${b.icon} ${b.label}</b><span class="muted">${displayDate(r.date)}</span></div>
+        <div class="amt">${formatMoney(r.amount)}</div>
+        <div class="muted" style="margin-top:2px">${esc(PAYMENT[r.payment] || '')}${r.note ? '  •  ' + esc(r.note) : ''}</div>
+        <div class="row" style="margin-top:10px">
+          <button class="link" style="color:#2563EB" data-act="edit" data-v="${r.id}">✏️ Düzenle</button>
+          <button class="link" style="color:#DC2626" data-act="del" data-v="${r.id}">🗑️ Sil</button>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+// ---------- Özet ----------
+function renderSummary() {
+  const [start, end] = state.period === 'ozel' ? [state.customStart, state.customEnd] : getRange(state.period);
+  const res = { studio: { total: 0, count: 0 }, salon: { total: 0, count: 0 }, pay: { nakit: 0, kart: 0, havale: 0 }, total: 0 };
+  state.records.filter((r) => (!start || r.date >= start) && (!end || r.date <= end)).forEach((r) => {
+    if (res[r.business]) { res[r.business].total += r.amount; res[r.business].count += 1; }
+    if (res.pay[r.payment] !== undefined) res.pay[r.payment] += r.amount;
+    res.total += r.amount;
+  });
+  return `
+    <h1>Özet</h1>
+    <div class="row wrap" style="margin-bottom:8px">
+      ${PERIODS.map(([k, l]) => `<button class="chip ${state.period === k ? 'active' : ''}" data-act="period" data-v="${k}">${l}</button>`).join('')}
+    </div>
+    ${state.period === 'ozel' ? `
+      <div class="row" style="gap:12px">
+        <div style="flex:1"><span class="label">Başlangıç</span><input class="input" type="date" id="cStart" value="${state.customStart}"></div>
+        <div style="flex:1"><span class="label">Bitiş</span><input class="input" type="date" id="cEnd" value="${state.customEnd}"></div>
+      </div>` : `<p class="muted" style="margin:0 0 12px">${start ? `${displayDate(start)} – ${displayDate(end)}` : 'Tüm kayıtlar'}</p>`}
+    ${state.loading ? '<div class="loading">Yükleniyor…</div>' : ''}
+    ${Object.entries(BUSINESS).map(([k, b]) => `
+      <div class="card rec" style="--c:${b.color}">
+        <b style="color:${b.color}">${b.icon} ${b.label}</b>
+        <div class="big">${formatMoney(res[k].total)}</div>
+        <div class="muted">${res[k].count} kayıt</div>
+      </div>`).join('')}
+    <div class="card total-card" style="margin-top:8px">
+      <b style="color:#D1D5DB">TOPLAM (Stüdyo + Salon)</b>
+      <div class="bigger">${formatMoney(res.total)}</div>
+      <div style="margin-top:10px;border-top:1px solid #374151;padding-top:8px">
+        ${Object.entries(PAYMENT).map(([k, l]) => `<div class="row between" style="margin-top:2px"><span style="color:#D1D5DB">${l}</span><b>${formatMoney(res.pay[k])}</b></div>`).join('')}
+      </div>
+    </div>
+    ${renderChart()}
+  `;
+}
+
+function renderChart() {
+  const year = state.chartYear, mode = state.chartMode;
+  const months = MONTHS.map((name) => ({ name, studio: 0, salon: 0 }));
+  state.records.forEach((r) => {
+    const [y, m] = r.date.split('-').map(Number);
+    if (y === year && months[m - 1] && (r.business === 'studio' || r.business === 'salon')) months[m - 1][r.business] += r.amount;
+  });
+  months.forEach((m) => { m.total = m.studio + m.salon; });
+  const val = (m) => (mode === 'toplam' ? m.total : m[mode]);
+  const max = Math.max(0, ...months.map(val));
+  let best = -1;
+  months.forEach((m, i) => { if (val(m) > 0 && (best < 0 || val(m) > val(months[best]))) best = i; });
+  const yearTotal = months.reduce((s, m) => s + val(m), 0);
+  const active = months.filter((m) => val(m) > 0).length;
+  const modeColor = mode === 'toplam' ? '#111827' : BUSINESS[mode].color;
+  return `
+    <div class="card" style="margin-top:8px">
+      <h2>📈 Aylık Karşılaştırma</h2>
+      <div class="row" style="justify-content:center;margin-bottom:10px">
+        <button class="arrow" data-act="year" data-v="-1">◀</button>
+        <b style="font-size:18px;margin:0 16px">${year}</b>
+        <button class="arrow" data-act="year" data-v="1">▶</button>
+      </div>
+      <div class="row wrap" style="margin-bottom:4px">
+        <button class="chip ${mode === 'toplam' ? 'active' : ''}" data-act="cmode" data-v="toplam">Toplam</button>
+        ${Object.entries(BUSINESS).map(([k, b]) => `<button class="chip ${mode === k ? 'active' : ''}" style="--c:${b.color}" data-act="cmode" data-v="${k}">${b.label}</button>`).join('')}
+      </div>
+      ${best >= 0 ? `
+        <div class="best">
+          <b>🏆 En çok kazanılan ay: ${months[best].name}</b>
+          <div style="margin-top:2px">${formatMoney(val(months[best]))}</div>
+          <div style="margin-top:6px;font-size:13px">Yıl toplamı: ${shortMoney(yearTotal)}  •  Aylık ortalama: ${shortMoney(yearTotal / active)}</div>
+        </div>` : `<p class="muted">${year} yılına ait kayıt yok.</p>`}
+      ${mode === 'toplam' ? `<div class="row" style="margin-bottom:8px">
+        ${Object.values(BUSINESS).map((b) => `<span class="row" style="margin-right:16px"><span style="width:12px;height:12px;border-radius:3px;background:${b.color};margin-right:6px;display:inline-block"></span><span class="muted" style="font-size:13px">${b.label}</span></span>`).join('')}
+      </div>` : ''}
+      ${months.map((m, i) => {
+        const v = val(m), isBest = i === best;
+        const bars = max <= 0 ? '' : mode === 'toplam'
+          ? `<div style="width:${(m.studio / max) * 100}%;background:${BUSINESS.studio.color}"></div><div style="width:${(m.salon / max) * 100}%;background:${BUSINESS.salon.color}"></div>`
+          : `<div style="width:${(v / max) * 100}%;background:${modeColor}"></div>`;
+        return `<div style="margin-bottom:10px">
+          <div class="row between" style="margin-bottom:3px">
+            <span style="font-weight:${isBest ? 800 : 600}">${isBest ? '🏆 ' : ''}${m.name}</span>
+            <span style="font-weight:${isBest ? 800 : 500}" class="${v > 0 ? '' : 'muted'}">${v > 0 ? shortMoney(v) : '–'}</span>
+          </div>
+          <div class="bar">${bars}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ---------- Ayarlar ----------
+function renderSettings() {
+  return `
+    <h1>Ayarlar</h1>
+    <div class="card">
+      <h2>🔑 Giriş Bilgileri</h2>
+      <label class="label">Mevcut şifre</label>
+      <input class="input" id="sCur" type="password" autocomplete="current-password">
+      <label class="label">Kullanıcı adı</label>
+      <input class="input" id="sUser" value="${esc(state.user)}" autocapitalize="off" autocorrect="off">
+      <label class="label">Yeni şifre</label>
+      <input class="input" id="sNew" type="password" autocomplete="new-password">
+      <button class="btn" data-act="cred">Güncelle</button>
+    </div>
+    <div class="card">
+      <h2>☁️ Veriler</h2>
+      <p class="muted" style="margin-top:0">Kayıtlar Neon veritabanında saklanıyor (${state.records.length} kayıt).</p>
+      <button class="btn outline" data-act="csv">Excel İçin Liste İndir (CSV)</button>
+    </div>
+    <button class="btn danger" data-act="logout" style="margin-top:8px">Çıkış Yap</button>
+  `;
+}
+
+async function changeCred() {
+  const cur = $('#sCur').value, nu = $('#sUser').value.trim(), np = $('#sNew').value;
+  if (!nu || np.length < 4) return toast('Kullanıcı adı boş olamaz, şifre en az 4 karakter olmalı.', true);
+  try {
+    const out = await db.changeCredentials(cur, nu, np);
+    setSession(out.token, out.username);
+    toast('Giriş bilgileri güncellendi ✅');
+    render();
+  } catch (e) { toast('Hata: ' + e.message, true); }
+}
+
+function downloadCsv() {
+  const rows = [...state.records].sort((a, b) => (a.date < b.date ? -1 : 1)).map((r) => [
+    displayDate(r.date), (BUSINESS[r.business] || {}).label || r.business,
+    r.amount.toFixed(2).replace('.', ','), PAYMENT[r.payment] || '', (r.note || '').replace(/[;\n\r]/g, ' '),
+  ].join(';'));
+  const csv = '﻿' + ['Tarih;İş Yeri;Tutar;Ödeme;Not', ...rows].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `gelirler-${todayStr()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ================= Olaylar =================
+$('#loginForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const u = $('#loginUser').value.trim(), p = $('#loginPass').value;
+  if (!u || !p) return;
+  const btn = $('#loginBtn'); btn.disabled = true; btn.textContent = 'Kontrol ediliyor…';
+  try {
+    const out = await db.login(u, p);
+    setSession(out.token, out.username);
+    $('#loginPass').value = '';
+    start();
+  } catch (e) { toast(e.message, true); }
+  finally { btn.disabled = false; btn.textContent = 'Giriş Yap'; }
+});
+
+document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { readFormIfAdd(); goTab(b.dataset.tab); }));
+function readFormIfAdd() { if (state.tab === 'ekle') readForm(); }
+
+window.addEventListener('popstate', () => { if (state.user) goTab(location.hash.slice(1) || 'ekle', true); });
+
+$('#view').addEventListener('change', (ev) => {
+  const id = ev.target.id;
+  if (id === 'fDate') state.form.date = ev.target.value || todayStr();
+  if (id === 'cStart' || id === 'cEnd') {
+    if (id === 'cStart') state.customStart = ev.target.value || state.customStart;
+    else state.customEnd = ev.target.value || state.customEnd;
+    render();
+  }
+});
+
+$('#view').addEventListener('click', async (ev) => {
+  const el = ev.target.closest('[data-act]');
+  if (!el) return;
+  const act = el.dataset.act, v = el.dataset.v;
+  switch (act) {
+    case 'biz': readForm(); state.form.business = v; render(); break;
+    case 'pay': readForm(); state.form.payment = v; render(); break;
+    case 'day': {
+      readForm();
+      const d = fromDateStr(state.form.date); d.setDate(d.getDate() + Number(v));
+      state.form.date = toDateStr(d); render(); break;
+    }
+    case 'save': saveForm(); break;
+    case 'cancelEdit': state.editing = null; state.form = emptyForm(); goTab('kayitlar'); break;
+    case 'filter': state.filter = v; render(); break;
+    case 'refresh': loadRecords(); break;
+    case 'edit': {
+      const r = state.records.find((x) => x.id === v);
+      if (!r) return;
+      state.editing = r;
+      state.form = { business: r.business, date: r.date, amount: amountToInput(r.amount), payment: r.payment, note: r.note };
+      goTab('ekle'); break;
+    }
+    case 'del': {
+      const r = state.records.find((x) => x.id === v);
+      if (!r || !confirm(`Kayıt silinsin mi?\n${BUSINESS[r.business].label} – ${displayDate(r.date)} – ${formatMoney(r.amount)}`)) return;
+      try {
+        await db.remove(v);
+        state.records = state.records.filter((x) => x.id !== v);
+        toast('Kayıt silindi'); render();
+      } catch (e) { toast('Silinemedi: ' + e.message, true); }
+      break;
+    }
+    case 'period': state.period = v; render(); break;
+    case 'year': state.chartYear += Number(v); render(); break;
+    case 'cmode': state.chartMode = v; render(); break;
+    case 'cred': changeCred(); break;
+    case 'csv': downloadCsv(); break;
+    case 'logout':
+      clearSession(); state.records = []; state.editing = null; state.form = emptyForm();
+      history.replaceState(null, '', location.pathname);
+      start(); break;
+  }
+});
+
+// Ana ekrana eklenebilmesi ve hızlı açılış için
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+start();
+</script>
+</body>
+</html>
