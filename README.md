@@ -15,7 +15,8 @@ Telefonda Chrome'dan **Ana ekrana ekle** ile uygulama gibi kullanılır.
 ## Kurulum
 
 ### 1. Neon (veritabanı)
-SQL Editor'da tablolar oluşturulmuş olmalı: `kullanicilar` (username, password) ve `gelirler`.
+SQL Editor'da tablolar oluşturulmuş olmalı: `kullanicilar` (username, password), `gelirler` ve `giderler`.
+Gider tablosu için `sql/giderler.sql` dosyasındaki kodu SQL Editor'da bir kez çalıştırın.
 
 Şifre değiştirmek için Neon → **Tables → kullanicilar** → `password` hücresi,
 veya SQL Editor'da:

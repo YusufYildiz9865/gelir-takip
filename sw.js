@@ -1,5 +1,5 @@
 // Uygulama dosyalarını önbelleğe alır (veritabanı isteklerine dokunmaz)
-const CACHE = 'gelir-takip-v2';
+const CACHE = 'gelir-takip-v3';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
